@@ -3,10 +3,10 @@
 outFile=$1
 xspecPath=$2
 inRelativePath=$3
-histFile=$4
-arfFile=$5
-rmfFile=$6
-nxbFile=$7
+histFile_dye=$4
+arfFile_dye=$5
+rmfFile_dye=$6
+nxbFile_dye=$7
 productPrefix=$8
 
 irp=$inRelativePath
@@ -14,14 +14,14 @@ pp=$productPrefix
 
 #GRPPHA can be  run  in  non-interactive  mode  by  separating commands  with  an  ampersand "&".
 
-pushd $xspecPath
+pushd $xspecPath >& /dev/null
 
 pwd
 
-echo ./$irp/${histFile}
+echo ./$irp/${histFile_dye}
 
-grppha infile=./$irp/${pp}${histFile} outfile=${pp}${outFile} clobber=yes comm="chkey ANCRFILE ./$irp/${pp}$arfFile & chkey RESPFILE ./$irp/${pp}$rmfFile & chkey BACKFILE ./$irp/${pp}$nxbFile & group min 25 & exit"
+grppha infile=./$irp/${pp}${histFile_dye} outfile=${pp}${outFile} clobber=yes comm="chkey ANCRFILE ./$irp/${pp}$arfFile_dye & chkey RESPFILE ./$irp/${pp}$rmfFile_dye & chkey BACKFILE ./$irp/${pp}$nxbFile_dye & group min 25 & exit"
 
 grppha infile=${pp}${outFile} outfile=${pp}${outFile} clobber=yes comm="show all & exit"
 
-popd
+popd >& /dev/null

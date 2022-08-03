@@ -1,21 +1,17 @@
 #!/usr/bin/env bash
 
-obs=$1
-dye=$2
-dyeDir=$3
-preRegImg=$4
-obsDS9=$5
-autoRegBool=${6:-false}
+# obs=$1
+# dye=$2
+preRegImg_dye=$1
 
 datedRegFile=${obsDS9/.EXT./reg}
 dateSuffix=${obsDS9##*'_'}
 
-pushd ${dyeDir}
 
 shopt -s nullglob
 
-xdim=$(gethead NAXIS1 ${preRegImg})
-ydim=$(gethead NAXIS2 ${preRegImg})
+xdim=$(gethead NAXIS1 ${preRegImg_dye})
+ydim=$(gethead NAXIS2 ${preRegImg_dye})
 
 #check for dated today file first, then expand to all regs
 
@@ -37,7 +33,7 @@ else
 
 regFile=${datedRegFile}
 
-ds9 ${preRegImg} \
+ds9 ${preRegImg_dye} \
     -scale log -cmap rainbow -smooth yes -contour yes -contour method smooth -contour scale histequ -contour mode zscale -contour smooth 5 -contour nlevels 1 -contour color black -contour generate -contour save ${obsDS9/.EXT./ctr} -contour convert -regions select all -regions exclude -regions group excluded new -regions select none -regions include -regions command "image;polygon(0,0,$xdim,0,$xdim,$ydim,0,$ydim)" -regions group excluded moveback -regions save ${regFile} -exit &
 
 PID=$!
@@ -60,7 +56,7 @@ case $autoRegBool in
 
 	echo "Loading image and regions for review/edit."
 
-	ds9 ${preRegImg} -scale log -cmap rainbow -smooth yes -zoom to fit -regions load ${regFile} &
+	ds9 ${preRegImg_dye} -scale log -cmap rainbow -smooth yes -zoom to fit -regions load ${regFile} &
 
 	PID=$!
 
@@ -79,14 +75,18 @@ esac
 # If can't save image, need to update ds9, and place in usr/local/bin
 
 #####
-echo "Loading region file and saving image for reference."
+echo "Loading region file and saving images for reference."
 
-ds9 ${preRegImg} -scale log -cmap rainbow -smooth yes -regions load ${regFile} -zoom to fit -saveimage png ${obsDS9/.EXT./png} -scale histequ -saveimage jpeg ${obsDS9/.EXT./jpeg} -exit &
+ds9 ${preRegImg_dye} -scale log -cmap rainbow -smooth yes -regions load ${regFile} -zoom to fit -saveimage png ${obsDS9/.EXT./png} -exit &
 
 PID=$!
-
 echo "DS9 Process ID for reference image out: $PID"
+wait $PID
 
+ds9 ${preRegImg_dye} -scale histequ -cmap rainbow -smooth yes -regions load ${regFile} -zoom to fit -saveimage jpeg ${obsDS9/.EXT./jpeg} -exit &
+
+PID=$!
+echo "DS9 Process ID for reference image out: $PID"
 wait $PID
 
 echo "DS9 @ Process ID: $PID closed. Reference image save completed."
@@ -94,7 +94,6 @@ echo "DS9 @ Process ID: $PID closed. Reference image save completed."
 
 shopt -u nullglob
 
-popd
 
 # http://ds9.si.edu/doc/ref/command.html
 # https://web.archive.org/web/20190911122945/http://ds9.si.edu/doc/ref/command.html

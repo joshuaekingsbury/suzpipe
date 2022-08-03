@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-obs=$1
 obsTypeID=${obs:0:1}
 obsBasePathFTP=https://heasarc.gsfc.nasa.gov/FTP/suzaku/data/obs/${obsTypeID}//${obs}/
 

@@ -5,7 +5,7 @@ inFile=$2
 outFile=$3
 attFilePath=$4
 
-pushd $dyePath
+pushd $dyePath >& /dev/null
 
 if [ -f $outFile ]; then
 
@@ -17,4 +17,4 @@ else
 	
 fi
 
-popd
+popd >& /dev/null

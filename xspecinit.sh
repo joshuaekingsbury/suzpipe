@@ -1,42 +1,58 @@
 #!/usr/bin/env bash
 
-obs=$1
+#obs=$1
 
-fittingPath=${obs}/xspec/source
+function xi(){
 
-initFile=xspecinit.xcm
-nhFile=getnh.sh
+    fittingPath=$PWD/$1/xspec
 
-cp ./$initFile ./$fittingPath
-cp ./$nhFile ./$fittingPath
+    initFile=_xspecinit.xcm
+    nhFile=_getnh.sh
 
-pushd $fittingPath
 
-chmod 777 $nhFile
 
-echo
-echo "GRPPHA Files:"
-echo
+    pushd $fittingPath
 
-ls -1a *grppha*
+    #chmod 777 $nhFile
 
-echo
+    echo
+    echo "GRPPHA Files:"
+    echo
+    pwd
+    ls -1a *grppha*
 
-read -e -p $'Enter grppha name in current directory: \n\n' inFile
+    echo
 
-obsDate=$(gethead DATE-OBS ${inFile})
+    read -e -p $'Enter grppha name in current directory: \n\n' inFile
 
-echo
-echo "Observation Date ($obs): $obsDate"
-echo
+    obsDate=$(gethead DATE-OBS ${inFile})
 
-sed -i 's/%1%/'"$inFile"'/' $initFile
+    echo
+    echo "Observation Date ($obs): $obsDate"
+    echo
 
-xspec - xspecinit.xcm
+    if [ ! -f $initFile ]; then
+        echo "No xspec init file found"
+    else
+        cp $initFile "_$initFile"
 
-./$nhFile
+        sed -i 's/%1%/'"$inFile"'/' "_$initFile"
 
-popd
+        xspec - "_$initFile"
+
+    fi
+
+
+
+    if [ ! -f $nhFile ]; then
+        echo "No getnh file found"
+    else
+        ./$nhFile
+    fi
+
+    popd >& /dev/null
+
+}
 
 # How to get autocomplete of file and directory in user prompt
 # https://stackoverflow.com/questions/4819819/get-autocompletion-when-invoking-a-read-inside-a-bash-script

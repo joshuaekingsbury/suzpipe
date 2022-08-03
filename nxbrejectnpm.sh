@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 
 
-bcfPath=$1
-outFile=$2
-nxbID=$3
-npmFile=$4
-nxbFile=$5
+# bcfPath=$1
+outFile=$1
+# nxbID=$3
+# npmFile=$4
+# nxbFile=$5
 
 
 # to return reject file
 #? https://stackoverflow.com/questions/16338086/bash-return-value-from-subscript-to-parent-script
 
-pushd ${bcfPath}
+pushd ${bcfPath} >& /dev/null
 #echo $PWD
 #check if reject file exists
 
@@ -40,4 +40,4 @@ else
 	
 fi
 
-popd
+popd >& /dev/null

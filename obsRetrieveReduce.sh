@@ -17,17 +17,47 @@
 # Path for current working observations; for download and reduction
 #obsPath=$SUZ/SURP21/obs
 #obsPath=$SUZ/eb_external/partial18
-obsPath=$PWD
+obs=$1
+elo=${2:-400}	  # Preview image lower bound; eV
+ehi=${3:-2000}  # Preview image upper bound; eV
+
+
+workingDir=$PWD
+obsPath=$workingDir/$obs
+evtPath=$obsPath/xis/event_cl
+
 
 # Path to CALDB; /home/joking/suzaku/caldb
 CALDB=$CALDB
 bcfPath=$CALDB/data/suzaku/xis/bcf/
-evtPath=/xis/event_cl
+
+
+#######################################
+##!/usr/bin/env bash
+SOURCE=${BASH_SOURCE[0]}
+while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+  SOURCE=$(readlink "$SOURCE")
+  [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+## https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
+echo $DIR
+#########################################
+
 
 # Path to scripts
-scriptPath=$obsPath
+scriptPath=$DIR
 
-obs=$1
+
+if [ -z "$1" ]; then
+    echo
+    echo "No observation id provided to begin processing. Try again. ;)"
+    echo
+    return 1 2> /dev/null || exit 1
+fi
+
+
 processedOn=${2:-""}
 #productPrefix=${2:-""}
 productPrefix=""
@@ -57,61 +87,70 @@ echo "Given this/these observations: ${obs[*]}"
 obsqlimgURL="https://data.darts.isas.jaxa.jp/pub/Astro_Browse/quick_look/suzaku/image/${obs}.png"
 obsqlxisimgURL="https://data.darts.isas.jaxa.jp/pub/suzaku/ver2/${obs}/xis/products/ae${obs}xis_0_im.gif"
 
-wget -c -P ${obsPath}/${obs} $obsqlimgURL
-wget -c -P ${obsPath}/${obs} $obsqlxisimgURL
+wget -c -P ${obsPath} $obsqlimgURL
+wget -c -P ${obsPath} $obsqlxisimgURL
+
 
 
 ####
 #   If the observation directory doesn't exist, download it via FTP
 #   (Works)
 ####
-. getObs.sh ${obs} &
+. getObs.sh # ${obs} &
 wait $!
+
 
 
 ####
 #   Script echos if no xis1 data file found; echo is assigned to xis1DataCheck and triggers exit of this script
 ####
 #chmod 777 instrMissing.sh
-. instrMissing.sh ${obs}
+. instrMissing.sh # ${obs} ${evtPath}
 xis1DataCheck=$?
 wait $!
 
 if [ $xis1DataCheck != 0 ];
 then
+	echo
 	echo "No XIS1 data found in relative working directory."
 	echo "Exiting reduction procedures."
-	exit
+	return 1 2> /dev/null || exit 1
 fi
+
+
 
 
 ####
 #   Extract (gunzip) event files from gz files
 ####
 #chmod 777 obsExtractEvt.sh
-. obsExtractEvt.sh ${obs}/${evtPath}
+. obsExtractEvt.sh # ${obsPath}/${evtPath}
 wait $!
 echo
 echo "Events extracted for $obs."
 echo
 
+
 ####
 #   Get observation date for time sensitive processing steps
 ####
-chmod 777 obsDate.sh
-obsDate=$( . obsDate.sh ${obs} )
+#chmod 777 obsDate.sh
+#obsDate=$( . obsDate.sh  )
+. obsDate.sh
 wait $!
 echo
 echo "$obsDate retrieved for $obs."
 echo
 
+
+
 ####
 #   
 ####
 #chmod 777 getCI.sh
-sci=$( . getCI.sh ${obs} )
+#sci=$( . getCI.sh ${obs} )
+. getCI.sh
 wait $!
-
 echo
 echo "sci state: $sci"
 echo
@@ -119,8 +158,12 @@ echo
 ####
 #   
 ####
-chmod 777 getnxbDate.sh
-nxbDate=$( . getnxbDate.sh ${sci} )
+
+echo "Identifying appropriate NXB and NPM file names."
+
+#chmod 777 getnxbDate.sh
+# nxbDate=$( . getnxbDate.sh ${sci} )
+. getnxbDate.sh
 wait $!
 
 nxbID=${sci}_${nxbDate}
@@ -146,11 +189,21 @@ echo "npm file: ${npmbcfFile}"
 echo "nxb file: ${nxbbcfFile}"
 
 ## Should check if file exists
+if [ ! -f $bcfPath/$npmbcfFile ]; then
 
+	echo
+	echo "Expecting NPM file: $npmbcfFile"
+	echo "Not found at: $bcfPath"
+
+	return 1 2> /dev/null || exit 1
+
+fi
 
 ########################
 pset xisputpixelquality badcolumfile=${bcfPath}/${npmbcfFile}
 wait $!
+
+
 
 ####
 #   Combine the 5x5 and 3x3 event files
@@ -161,11 +214,10 @@ wait $!
 
 GTI_file=xi1_events_GTI_${obs}.fits
 
-chmod 777 merge5to3.sh
-. merge5to3.sh ${obs} ${bcfPath}/${npmbcfFile} ${GTI_file}
+#chmod 777 merge5to3.sh
+. merge5to3.sh # ${obs} ${bcfPath}/${npmbcfFile} ${evtPath} ${GTI_file}
 wait $!
-GTI_path=${obsPath}/${obs}/${evtPath}/${GTI_file}
-
+GTI_path=${evtPath}/${GTI_file}
 
 ########################### Check here if GTI file exists
 
@@ -178,17 +230,21 @@ GTI_path=${obsPath}/${obs}/${evtPath}/${GTI_file}
 ####
 
 #chmod 777 mkPipelineDirs.sh
-. mkPipelineDirs.sh ${obs} ${obsDate}
+. mkPipelineDirs.sh # ${obs} ${obsDate} ${obsPath}
 wait $!
 ####
 #   Set path to DYE base dir where will be reduced
 #   Create list of DYE dir(s)
 #   Create list of DYE values
 ####
-dyeDir=${obs}/reduced/
-pushd ${dyeDir}
+
+
+
+dyeDir=${obsPath}/reduced
+
+pushd ${dyeDir} >& /dev/null
 dyeDirList=( *_dye )
-popd
+popd >& /dev/null
 dyes=()
 
 for d in ${dyeDirList[*]}
@@ -206,27 +262,23 @@ wait $!
 
 # https://stackoverflow.com/questions/20669033/how-to-get-wildcard-portion-of-filename-in-bash
 
-
 ####
 #   Check to see if a hist file exists, if so what date, and if we want to try continuing using files from this date
 #   basically only updates $processedOn variable, lets frun from there
 ####
 
-obsProductPath=${dyeDir}/20_dye/
-pushd "$obsProductPath"
+
+
+obsProductPath=${dyeDir}/20_dye
+pushd $obsProductPath >& /dev/null
 echo
 echo $obsProductPath
 
 shopt -s nullglob
 
-# #####
-# exit
-# #####
 histFiles=( *hist.xsl )
 echo ${histFiles[@]}
 oneHistFile=${histFiles[0]}
-
-echo ${histFiles[@]}
 
 shopt -u nullglob
 
@@ -235,11 +287,12 @@ then
 	previouslyProcessedDate=${oneHistFile%%_hist.xsl}
 	previouslyProcessedDate=${previouslyProcessedDate##*_}
 	
-	echo $previouslyProcessedDate
+	echo
+	echo "Previously Processed Date: $previouslyProcessedDate"
 	
+	echo
 	echo "Previous hist file(s) found: "
 	echo ${histFiles[@]}
-	echo
 	
 	#doesn't allow selection of second date or other complex stuff, need this now to quick repair files, can expand later
 	read -e -p $'-Leave blank or y for first date \n-any other input to reduce from scratch \n\nEnter selection: \n\n' promptIn
@@ -252,25 +305,34 @@ then
 	fi
 	
 	# Leave $processedOn assigned to today's date
-	
+
+else
+	echo 
+	echo "No previous hist files found."
 fi
 
-popd
+popd >& /dev/null
 echo
-echo $processedOn
+echo "Processed on: $processedOn"
+
 
 ####
 #   
 ####
 
-sessionID=${obs}_.DYE._${processedOn}
+#sessionID=${obs}_.DYE._${processedOn}
 
-preRegImg=0_4-2_0_image_${obs}_dye.NUM..fits
+preRegImg=${elo}-${ehi}_image_${obs}_dye.NUM..fits
+
+
+
+
 
 #chmod 777 obsExtractImg.sh
 for dye in ${dyes[*]}
 do
-	. obsExtractImg.sh ${obs} ${dye} ${dyeDir} ${scriptPath} ${obsPath}/${obs}/${evtPath} ${GTI_file} ${preRegImg/.NUM./$dye} ${processedOn}
+	# ./obsExtractImg.sh ${obs} ${dye} ${dyeDir} ${scriptPath} ${evtPath} ${GTI_file} ${preRegImg/.NUM./$dye} ${processedOn}
+	. obsExtractImg.sh ${GTI_file} ${preRegImg/.NUM./$dye} ${processedOn}
 	wait $!
 done
 
@@ -278,10 +340,8 @@ done
 
 
 
-
-
 #####
-exit
+#exit
 #####
 
 
@@ -302,33 +362,37 @@ dyeMin=20
 
 echo "Minimum DYE used to generate region file: $dyeMin. (Hardcoded for now)"
 
-obsRegPath=${dyeDir}/${dyeMin}_dye/
+obsRegPath=${dyeDir}/${dyeMin}_dye
 obsDS9=${obs}_${dyeMin}_${processedOn}..EXT.
 obsReg=${obsDS9/.EXT./reg}
 
 #chmod 777 genRegions.sh
 
+
+##### Should check for region in top folder instead of lower folders...
+
 echo ${preRegImg/.NUM./$dyeMin}
-
-./genRegions.sh ${obs} ${dyeMin} ${dyeDir}/${dyeMin}_dye ${preRegImg/.NUM./$dyeMin} ${obsDS9} ${autoRegBool}
-
+pushd ${obsRegPath} >& /dev/null
+. genRegions.sh ${preRegImg/.NUM./$dyeMin}
+popd >& /dev/null
 wait $!
 
 # copy dye 20 image to all reduced dye folders
 for dye in ${dyes[*]}
 do
-	cp ./${obsRegPath}/${obsDS9/.EXT./png} ${dyeDir}/${dye}_dye/${obsDS9/.EXT./png}
+	cp ${obsRegPath}/${obsDS9/.EXT./png} ${dyeDir}/${dye}_dye/${obsDS9/.EXT./png}
 	wait $!
 done
 
 # copy dye image and region file to obs directory for easy reference/access
 
-cp ./${obsRegPath}/${obsDS9/.EXT./png} ./${obs}/${obsDS9/.EXT./png}
-cp ./${obsRegPath}/${obsDS9/.EXT./reg} ./${obs}/${obsDS9/.EXT./reg}
+cp ${obsRegPath}/${obsDS9/.EXT./png} ${obsPath}/${obsDS9/.EXT./png}
+cp ${obsRegPath}/${obsDS9/.EXT./reg} ${obsPath}/${obsDS9/.EXT./reg}
 
 ###################
-#exit
+# return 1 2> /dev/null || exit 1
 ###################
+
 # https://stackoverflow.com/questions/13210880/replace-one-substring-for-another-string-in-shell-script
 # https://linuxhint.com/wait_command_linux/
 
@@ -340,41 +404,43 @@ arfFile=${productTemplate/PRODUCT/arf}
 nxbFile=${productTemplate/PRODUCT/nxb}
 grpphaFile=${productTemplate/PRODUCT/grppha}
 
-
 ####
 #   Obtain the hist file; 
 ####
 
-chmod 777 obsExtractAll.sh
+#chmod 777 obsExtractAll.sh
 for dye in ${dyes[*]}
 do
-	./obsExtractAll.sh ${obs} ${dye} ${dyeDir} ${scriptPath} ${obsPath}/${obs}/${evtPath} ${GTI_file} ${histFile/DYE/$dye} ${obsPath}/${obs}/${obsDS9/.EXT./reg} ${processedOn}
+	# Passing in evtPath (/xis/event_cl) only as it adds rest; NOT SAME as ABOVE ExtractIMG
+	## No clue why yet, haven't troubleshot
+	. obsExtractAll.sh ${GTI_file} ${histFile/DYE/$dye} ${obsPath}/${obsDS9/.EXT./reg} ${processedOn}
+#	. obsExtractAll.sh ${obs} ${dye} ${dyeDir} ${scriptPath} ${obsPath}/${evtPath} ${GTI_file} ${histFile/DYE/$dye} ${obsPath}/${obsDS9/.EXT./reg} ${processedOn}
 	wait $!
 done
+
+#return 1 2> /dev/null || exit 1
 
 ####
 #   Obtain the rmf file; 
 ####
 
-chmod 777 xisrmfgen.sh
+#chmod 777 xisrmfgen.sh
 for dye in ${dyes[*]}
 do
-	./xisrmfgen.sh ${dyeDir}/${dye}_dye ${histFile/DYE/$dye} ${rmfFile/DYE/$dye}
+	. xisrmfgen.sh ${dyeDir}/${dye}_dye ${histFile/DYE/$dye} ${rmfFile/DYE/$dye}
 	wait $!
 done
-
 
 ####
 #   Obtain the expmap file; 
 ####
 
-chmod 777 xisexpmapgen.sh
+#chmod 777 xisexpmapgen.sh
 for dye in ${dyes[*]}
 do
-	./xisexpmapgen.sh ${dyeDir}/${dye}_dye ${histFile/DYE/$dye} ${expmapFile/DYE/$dye} ${obsPath}/${obs}/auxil/ae${obs}.att.gz
+	. xisexpmapgen.sh ${dyeDir}/${dye}_dye ${histFile/DYE/$dye} ${expmapFile/DYE/$dye} ${obsPath}/auxil/ae${obs}.att.gz
 	wait $!
 done
-
 
 ####
 #   Fetch proper bad colum file path (npm; noisy pixel file) from CALDB
@@ -383,9 +449,20 @@ done
 
 rejectFile=ae_xi1_nxbsci${nxbID}_rejectnpm.fits
 
-chmod 777 nxbrejectnpm.sh
-./nxbrejectnpm.sh ${bcfPath} ${rejectFile} ${nxbID} ${npmbcfFile} ${nxbbcfFile}
+#chmod 777 nxbrejectnpm.sh
+. nxbrejectnpm.sh ${rejectFile}
 wait $!
+
+if [ ! -f $bcfPath/$rejectFile ]; then
+
+	echo
+	echo "Expecting nxb_rejectnpm file: $rejectFile"
+	echo "Not found at: $bcfPath"
+
+	return 1 2> /dev/null || exit 1
+
+fi
+
 
 
 ### Ignore this block
@@ -409,14 +486,12 @@ echo
 #   Moved before simarfgen because this step can fail,
 #    rendering !long! simarfgen time(s) wasted 
 ####
-chmod 777 xisnxbgen.sh
+#chmod 777 xisnxbgen.sh
 for dye in ${dyes[*]}
 do
-	./xisnxbgen.sh ${dyeDir}/${dye}_dye ${obsPath}/${obs}/${obsDS9/.EXT./reg} ${nxbFile/DYE/$dye} ${histFile/DYE/$dye} ${obsPath}/${obs}/auxil/ae${obs}.att.gz ${obsPath}/${obs}/auxil/ae${obs}.orb.gz ${bcfPath}/${rejectFile}
+	. xisnxbgen.sh ${dyeDir}/${dye}_dye ${obsPath}/${obsDS9/.EXT./reg} ${nxbFile/DYE/$dye} ${histFile/DYE/$dye} ${obsPath}/auxil/ae${obs}.att.gz ${obsPath}/auxil/ae${obs}.orb.gz ${bcfPath}/${rejectFile}
 	wait $!
 done
-
-
 
 ####################
 #exit
@@ -425,12 +500,14 @@ done
 #   Simulate/generate arf file; 
 ####
 
-chmod 777 xissimarfgen.sh
+#chmod 777 xissimarfgen.sh
 for dye in ${dyes[*]}
 do
-	./xissimarfgen.sh ${dyeDir}/${dye}_dye ${obsPath}/${obs}/${obsDS9/.EXT./reg} ${arfFile/DYE/$dye} ${histFile/DYE/$dye} ${expmapFile/DYE/$dye} ${obsPath}/${obs}/auxil/ae${obs}.att.gz ${rmfFile/DYE/$dye} ${bcfPath}/${npmbcfFile}
+	. xissimarfgen.sh ${dyeDir}/${dye}_dye ${obsPath}/${obsDS9/.EXT./reg} ${arfFile/DYE/$dye} ${histFile/DYE/$dye} ${expmapFile/DYE/$dye} ${obsPath}/auxil/ae${obs}.att.gz ${rmfFile/DYE/$dye} ${bcfPath}/${npmbcfFile}
 	wait $!
 done
+
+
 
 ####
 #   Copy reduced data products to xspec directory structure
@@ -438,7 +515,7 @@ done
 #   Expecting to find ds9 region png in observation folder for wuick checking
 ####
 
-chmod 777 cpProductsToXspecPath.sh
+#chmod 777 cpProductsToXspecPath.sh
 
 for dye in ${dyes[*]}
 do
@@ -450,7 +527,7 @@ do
 
 	echo $productPrefix
 
-	./cpProductsToXspecPath.sh ${dyeDir}/${dye}_dye ${obs}/xspec/source/${dye}_dye "${productPrefix}" ${histFile/DYE/$dye} ${arfFile/DYE/$dye} ${rmfFile/DYE/$dye} ${nxbFile/DYE/$dye} ${obsDS9/.EXT./png} 
+	. cpProductsToXspecPath.sh ${dyeDir}/${dye}_dye ${obs}/xspec/${dye}_dye "${productPrefix}" ${histFile/DYE/$dye} ${arfFile/DYE/$dye} ${rmfFile/DYE/$dye} ${nxbFile/DYE/$dye} ${obsDS9/.EXT./png} 
 	wait $!
 done
 
@@ -462,15 +539,18 @@ pwd
 #   Generate grppha file
 ####
 
-chmod 777 grpphaMake.sh
+#chmod 777 grpphaMake.sh
+
+#return 1 2> /dev/null || exit 1
+
 
 for dye in ${dyes[*]}
 do
 
 	pwd
 
-	./grpphaMake.sh ${grpphaFile/DYE/$dye} ./${obs}/xspec/source /${dye}_dye ${histFile/DYE/$dye} ${arfFile/DYE/$dye} ${rmfFile/DYE/$dye} ${nxbFile/DYE/$dye} ${productPrefix}
+	. grpphaMake.sh ${grpphaFile/DYE/$dye} ${obsPath}/xspec /${dye}_dye ${histFile/DYE/$dye} ${arfFile/DYE/$dye} ${rmfFile/DYE/$dye} ${nxbFile/DYE/$dye} ${productPrefix}
 	wait $!
 done
 
-
+. xcessories.sh

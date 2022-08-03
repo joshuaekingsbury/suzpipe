@@ -1,7 +1,7 @@
 
 
 # In xspec, use:
-# syscall ./getnh.sh
+# syscall ./_getnh.sh
 
 # To get nH info without leaving xspec
 

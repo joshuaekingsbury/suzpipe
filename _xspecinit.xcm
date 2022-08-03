@@ -8,6 +8,6 @@ setplot energy
 
 setplot add
 
-syscall ./getnh.sh
+syscall ./_getnh.sh
 
-plot
+plot ldata

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-obs=$1
-
 shopt -s nullglob
 
 evtFiles=( ${obs}/xis/event_cl/ae${obs}*3x3*_cl.evt )
@@ -9,10 +7,10 @@ oneEvtFile=${evtFiles[0]}
 
 shopt -u nullglob
 
-obsDate=$(gethead DATE-OBS ${oneEvtFile})
-# For a date formatted YYYY-MM-DDThh:mm:ss
-# Get the YYYY-MM-DD, first 10 characters
-obsDate=${obsDate:0:10}
+# obsDate=$(gethead DATE-OBS ${oneEvtFile})
+# # For a date formatted YYYY-MM-DDThh:mm:ss
+# # Get the YYYY-MM-DD, first 10 characters
+# obsDate=${obsDate:0:10}
 
 # How to determine ci states
 # https://heasarc.gsfc.nasa.gov/docs/suzaku/analysis/abc/node8.html#SECTION00826100000000000000
@@ -80,4 +78,5 @@ fi
 #echo "For obs: $obs with event file name: $oneEvtFile,"
 #echo "CI state determined to be: $ciSelection"
 
-echo $ciSelection
+# echo $ciSelection
+sci=$ciSelection

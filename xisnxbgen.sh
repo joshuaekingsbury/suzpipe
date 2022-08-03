@@ -3,14 +3,14 @@
 dyePath=$1
 regFile=$2
 outFile=$3
-histFile=$4
+histFile_dye=$4
 attFile=$5
 orbFile=$6
 nxbEvent=$7
 
 #pset xisnxbgen nxbevent=${nxbEvent}
 
-pushd ${dyePath}
+pushd ${dyePath} >& /dev/null
 
 if [ -f $outFile ]; then
 
@@ -19,7 +19,7 @@ else
 
 	xisnxbgen \
 	outfile=${outFile} \
-	phafile=${histFile} \
+	phafile=${histFile_dye} \
 	region_mode=SKYREG \
 	regfile=${regFile} \
 	orbit=${orbFile} \
@@ -28,4 +28,4 @@ else
 	
 fi
 
-popd
+popd >& /dev/null

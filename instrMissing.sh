@@ -2,10 +2,7 @@
 
 # Check if XIS1 instrument collected any data (if xis1 files were downloaded)
 
-obs=$1
-evtPath=/xis/event_cl
-
-pushd ${obs}/${evtPath}
+pushd ${evtPath} >& /dev/null
 
 shopt -s nullglob
 
@@ -13,9 +10,16 @@ xi1=(*xi1*)
 
 shopt -u nullglob
 
-popd
+popd >& /dev/null
 	
-if [ -z "$xi1" ];
-then
-	exit 1
+if [ -z "$xi1" ]; then
+	echo
+	echo "No XIS1 files found at: ${evtPath}"
+	echo
+	return 1 2> /dev/null || exit 1
+
+else
+	echo
+	echo "XIS1 files found at: ${evtPath}"
+
 fi

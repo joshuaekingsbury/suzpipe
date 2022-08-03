@@ -3,13 +3,13 @@
 dyePath=$1
 regFile=$2
 outFile=$3
-histFile=$4
-expmapFile=$5
+histFile_dye=$4
+expmapFile_dye=$5
 attFile=$6
-rmfFile=$7
+rmfFile_dye=$7
 badcolumfile=$8
 
-pushd ${dyePath}
+pushd ${dyePath} >& /dev/null
 
 if [ -f $outFile ]; then
 
@@ -31,14 +31,14 @@ else
 	limit_mode=MIXED \
 	num_photon=2000000 \
 	accuracy=0.005 \
-	phafile=${histFile} \
-	detmask=${expmapFile} \
-	gtifile=${histFile} \
+	phafile=${histFile_dye} \
+	detmask=${expmapFile_dye} \
+	gtifile=${histFile_dye} \
 	attitude=${attFile} \
-	rmffile=${rmfFile} \
+	rmffile=${rmfFile_dye} \
 	estepfile=medium \
 	badcolumfile=${badcolumfile}
 	
 fi
 
-popd
+popd >& /dev/null

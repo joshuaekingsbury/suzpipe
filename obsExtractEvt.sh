@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 
-evtPath=$1
-
-pushd ${evtPath}
+pushd ${evtPath} >& /dev/null
 
 yes n | gunzip *.*
 
-popd
+popd >& /dev/null
 
 
 

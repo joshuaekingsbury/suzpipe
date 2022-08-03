@@ -2,18 +2,20 @@
 
 # Clean and merge 3x3 and 5x5
 
-obs=$1
-bcf=$2
-GTI_file=${3:-xi1_events_GTI_${obs}.fits}
-evtPath=/xis/event_cl
+#obs=$1
+#bcf=$2
+#evtPath=${3:-/xis/event_cl}
+#GTI_file=${4:-xi1_events_GTI_${obs}.fits}
 hkPath=/xis/hk
 
 #need bad column file; GOT bcf
+#echo "HEREEEEEEEEE ${evtPath} ******************"
 
-pushd ${obs}/${evtPath}
+if [ ! -f $evtPath/$GTI_file ]; then
 
-if [ ! -f $GTI_file ]; then
+	pushd ${evtPath} >& /dev/null
 
+	echo 
 	echo "No GTI file found. Creating."
 
 	shopt -s nullglob
@@ -25,16 +27,17 @@ if [ ! -f $GTI_file ]; then
 	x3=(ae${obs}xi1_0_3x3*_cl.evt)
 	x5=(ae${obs}xi1_0_5x5*_cl.evt)
 	
+	echo
 	echo "found(?) 5x5 -> ${x5[*]} <-"
 
-	pset xisputpixelquality badcolumfile=${bcf}
+	#pset xisputpixelquality badcolumfile=${bcfPath}/${npmbcfFile}
 
 	xisputpixelquality ${x3} badcolum_3x3_${obs}.fits
 	ftcopy "badcolum_3x3_$obs.fits[EVENTS][STATUS=0:524287]" ftcopy_3x3_524287_${obs}.fits
 
 	if [ ! -z "$x5" ] && [ -f $x5 ];
 	then
-		
+		echo 
 		echo "5x5 ${x5[*]} found; merging."
 
 		xisputpixelquality ${x5} badcolum_5x5_${obs}.fits
@@ -58,6 +61,7 @@ if [ ! -f $GTI_file ]; then
 
 	else
 
+		echo 
 		echo "No 5x5 found. Only 3x3 was used."
 
 		cp ftcopy_3x3_524287_${obs}.fits ${GTI_file}
@@ -67,15 +71,18 @@ if [ ! -f $GTI_file ]; then
 	shopt -u nullglob
 
 	if [ -f $GTI_file ]; then
+		echo
 		echo "GTI file: $GTI_file created."
 	else
+		echo
 		echo "Failed to create GTI file: $GTI_file."
 	fi
 
-	popd
+	popd >& /dev/null
 
 
 else
+	echo
 	echo "GTI file already exists."
 fi
 

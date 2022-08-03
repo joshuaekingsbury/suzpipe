@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-ciState=$1
-
 # Should these be switched to nxb file dates? They're newer than table
 
 # Before; sciof
@@ -31,14 +29,14 @@ nxb6Date=20160128
 #ae_xi1_nxbscion_20110602_rejectnpm.fits
 
 
-if [[ "$ciState" == "of" ]]
+if [[ "$sci" == "of" ]]
 then
 	nxbDate=${nxbofDate}
-elif [[ "$ciState" == "on" ]]
+elif [[ "$sci" == "on" ]]
 then
 	nxbDate=${nxbonDate}
 else
 	nxbDate=${nxb6Date}
 fi
 
-echo ${nxbDate}
+#echo ${nxbDate}
