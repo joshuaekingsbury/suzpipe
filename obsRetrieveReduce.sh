@@ -377,6 +377,9 @@ pushd ${obsRegPath} >& /dev/null
 popd >& /dev/null
 wait $!
 
+#return 1 2> /dev/null || exit 1
+
+
 # copy dye 20 image to all reduced dye folders
 for dye in ${dyes[*]}
 do

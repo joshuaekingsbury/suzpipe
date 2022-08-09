@@ -26,3 +26,5 @@ fi
 if [ -f $DIR/$nhFile ]; then
     cp $DIR/$nhFile $fittingPath
 fi
+
+. xspecinit.sh

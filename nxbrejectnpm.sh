@@ -25,8 +25,8 @@ else
 	
 	
 	tempFile=ae_xi1_nxbsci${nxbID}_badcolum.fits
-	pset xisputpixelquality badcolumfile=${bcfPath}/${npmFile}
-	xisputpixelquality ${nxbFile} ${tempFile}
+	pset xisputpixelquality badcolumfile=${bcfPath}/${npmbcfFile}
+	xisputpixelquality ${nxbbcfFile} ${tempFile}
 	ftcopy "$tempFile[EVENTS][STATUS=0:524287]" ${outFile}
 	rm ${tempFile}
 	
