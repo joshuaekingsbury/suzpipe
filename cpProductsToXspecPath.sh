@@ -9,11 +9,11 @@ productPrefix=$3
 #arfFile=
 #rmfFile=
 #nxbFile=
-#regImgFile=
+#regImgFile=s
 
 for sourceFile in "${@:4}"
 do
-	echo "to:: $productPrefix"
+	echo "prefix:: $productPrefix"
 	echo "from $fromPath/$sourceFile"
 
 	echo "to $toPath/$productPrefix$sourceFile"

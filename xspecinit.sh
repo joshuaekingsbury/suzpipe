@@ -18,7 +18,7 @@ function xi(){
     echo
     echo "GRPPHA Files:"
     echo
-    pwd
+    #pwd
     ls -1a *grppha*
 
     echo
