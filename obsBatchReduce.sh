@@ -84,8 +84,8 @@ if [[ $_shell == "zsh" ]]; then
 else
 
     # Working version on linux
-    #xargs -t -n1 -P4 -a $obsListFile . testMultiTerm.sh
-    echo $_shell
+    xargs -t -n1 -P4 -a $obsListFile . testMultiTerm.sh
+    #echo $_shell
 
 fi
 
