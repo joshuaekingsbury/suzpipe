@@ -84,8 +84,13 @@ if [[ $_shell == "zsh" ]]; then
 else
 
     # Working version on linux
-    xargs -t -n1 -P4 -a $obsListFile . testMultiTerm.sh
+    #xargs -t -n1 -P4 -a $obsListFile . testMultiTerm.sh
+    
     #echo $_shell
+    while read -r line
+    do
+      gnome-terminal -- bash -c '. obsRetrieveReduce.sh '$line'; exec bash'
+    done < "$obsListFile"
 
 fi
 
