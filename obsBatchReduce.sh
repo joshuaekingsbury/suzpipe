@@ -19,9 +19,33 @@ fi
 # chmod 777 ./obsRetrieveReduce.sh
 # chmod 777 ./testMultiTerm.shw
 #xargs -0 -n1 ./obsRetrieveReduce.sh <npmTestList.txt
-_shell=$( echo $0 | tr -d '-' )
 
-if[[ "$_shell" == "zsh" ]]; then
+# Breaks inside script as it returns script instead of shell
+#_shell="$( echo $0 | tr -d '-' )"
+
+
+
+# Determine what (Bourne compatible) shell we are running under. Put the result
+# in $_shell (not $SHELL) so further code can depend on the shell type.
+
+if test -n "$ZSH_VERSION"; then
+  _shell=zsh
+elif test -n "$BASH_VERSION"; then
+  _shell=bash
+elif test -n "$KSH_VERSION"; then
+  _shell=ksh
+elif test -n "$FCEDIT"; then
+  _shell=ksh
+elif test -n "$PS3"; then
+  _shell=unknown
+else
+  _shell=sh
+fi
+
+## Borrowed from
+# https://unix.stackexchange.com/a/72475
+
+if [[ $_shell == "zsh" ]]; then
 
     ## Check if zsh, otherwise go old bash route
     #!/bin/zsh
@@ -60,7 +84,8 @@ if[[ "$_shell" == "zsh" ]]; then
 else
 
     # Working version on linux
-    xargs -t -n1 -P4 -a $obsListFile . testMultiTerm.sh
+    #xargs -t -n1 -P4 -a $obsListFile . testMultiTerm.sh
+    echo $_shell
 
 fi
 
