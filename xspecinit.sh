@@ -34,7 +34,7 @@ function xi(){
     if [ ! -f $initFile ]; then
         echo "No xspec init file found"
     else
-        #cp $initFile "_$initFile"
+        cp $initFile "_$initFile"
 
         sed -i '' 's/%1%/'"$inFile"'/' "_$initFile"
 
