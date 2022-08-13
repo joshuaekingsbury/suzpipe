@@ -22,3 +22,16 @@ obsBasePathFTP=https://heasarc.gsfc.nasa.gov/FTP/suzaku/data/obs/${obsTypeID}//$
 	wget -q -nH --no-check-certificate --cut-dirs=5 -r -l0 -c -np -nc -erobots=off --retr-symlinks --show-progress -A *.att.gz,*.hk.gz,*.orb.gz,*.evt.gz,*.gti.gz,*.mkf.gz -R 'index*',*_uf*,*xi0*,*xi2*,*xi3*,*hxd* $obsBasePathFTP
 	echo "$obs downloaded."
 #fi
+
+if [ wget -q --spider $obsqlimgURL ]; then
+	wget -c -P ${obsPath} $obsqlimgURL
+fi
+
+if [ wget -q --spider $obsqlxisimgURL ]; then
+	wget -c -P ${obsPath} $obsqlxisimgURL
+fi
+
+if [ wget -q --spider $obsBasePathFTP ]; then
+	wget -q -nH --no-check-certificate --cut-dirs=5 -r -l0 -c -np -nc -erobots=off --retr-symlinks --show-progress -A *.att.gz,*.hk.gz,*.orb.gz,*.evt.gz,*.gti.gz,*.mkf.gz -R 'index*',*_uf*,*xi0*,*xi2*,*xi3*,*hxd* $obsBasePathFTP
+	echo "$obs downloaded."
+fi

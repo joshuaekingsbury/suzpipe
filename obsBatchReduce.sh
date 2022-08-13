@@ -42,8 +42,11 @@ else
   _shell=sh
 fi
 
-## Borrowed from
+## Shell Check Above Borrowed from
 # https://unix.stackexchange.com/a/72475
+
+
+# bashinit includes heainit, caldbinit, condainit (for wget); batch processing requires being run in a bash shell
 
 if [[ $_shell == "zsh" ]]; then
 
@@ -51,7 +54,6 @@ if [[ $_shell == "zsh" ]]; then
     #!/bin/zsh
     for line in "${(f)"$(<$obsListFile)"}"
     {
-        num_tab=2
         echo $line
 
         osascript -e "on run argv
@@ -70,15 +72,33 @@ if [[ $_shell == "zsh" ]]; then
                     if not busy of window 1 then exit repeat
                 end repeat
                 
-                item 1 of argv
-
                 # tell application \"Terminal\" to do script \"echo \" & quoted form of item 1 of argv & \";\" in selected tab of the front window
-                tell application \"Terminal\" to do script \"heainit;caldbinit;. obsRetrieveReduce.sh \" & quoted form of item 1 of argv & \";\" in selected tab of the front window
+                #tell application \"Terminal\" to do script \"condainit; heainit; caldbinit;. obsRetrieveReduce.sh \" & quoted form of item 1 of argv & \";\" in selected tab of the front window
+                #tell application \"Terminal\" to do script \"batchinit;. obsRetrieveReduce.sh \" & quoted form of item 1 of argv & \";\" in selected tab of the front window
+
+
+                tell application \"Terminal\" to do script \"condainit\" in selected tab of the front window
+                repeat
+                    delay 0.1
+                    if not busy of window 1 then exit repeat
+                end repeat
+
+                tell application \"Terminal\" to do script \"heainit\" in selected tab of the front window
+                repeat
+                    delay 0.1
+                    if not busy of window 1 then exit repeat
+                end repeat
+
+                tell application \"Terminal\" to do script \"caldbinit\" in selected tab of the front window
+                repeat
+                    delay 0.1
+                    if not busy of window 1 then exit repeat
+                end repeat
+
+                tell application \"Terminal\" to do script \". obsRetrieveReduce.sh \" & item 1 of argv & \";\" in selected tab of the front window
 
             end tell
         end run" $line
-
-        num_tab=$num_tab+1
 
     }
 else
