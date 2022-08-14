@@ -95,7 +95,8 @@ if [[ $_shell == "zsh" ]]; then
                     if not busy of window 1 then exit repeat
                 end repeat
 
-                tell application \"Terminal\" to do script \". obsRetrieveReduce.sh \" & item 1 of argv & \";\" in selected tab of the front window
+                # tell application \"Terminal\" to do script \". obsRetrieveReduce.sh \" & item 1 of argv & \";\" in selected tab of the front window
+                tell application \"Terminal\" to do script \". obsRetrieveReduce.sh \" & item 1 of argv in selected tab of the front window
 
             end tell
         end run" $line
