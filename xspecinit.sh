@@ -64,5 +64,7 @@ function xi(){
 
 }
 
+export -f xi
+
 # How to get autocomplete of file and directory in user prompt
 # https://stackoverflow.com/questions/4819819/get-autocompletion-when-invoking-a-read-inside-a-bash-script

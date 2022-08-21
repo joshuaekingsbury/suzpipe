@@ -23,7 +23,7 @@ ehi=${3:-2000}  # Preview image upper bound; eV
 
 
 workingDir=$PWD
-obsPath=$workingDir/$obs
+export obsPath=$workingDir/$obs
 evtPath=$obsPath/xis/event_cl
 
 
