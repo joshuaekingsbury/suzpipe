@@ -14,7 +14,15 @@ echo $DIR
 #########################################
 
 
+echo "obsPath: $obsPath"
+
+if [ -z $obsPath ]; then
+    obsPath=$PWD
+fi
+
 fittingPath=${obsPath}/xspec
+
+echo "Fitting Path: $fittingPath"
 
 initFile=_xspecinit.xcm
 nhFile=_getnh.sh

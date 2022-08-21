@@ -34,10 +34,20 @@ function xi(){
     if [ ! -f $initFile ]; then
         echo "No xspec init file found"
     else
-        cp $initFile "_$initFile"
+        cp $initFile "_${initFile}"
 
-        sed -i '' 's/%1%/'"$inFile"'/' "_$initFile"
 
+	# bashinit includes heainit, caldbinit, condainit (for wget); batch processing requires being run in a bash shell
+	
+	echo "$OSTYPE"
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+
+            sed -i '' 's/%1%/'"${inFile}"'/' "_${initFile}"
+        else
+            
+            sed -i 's/%1%/'"${inFile}"'/' "_${initFile}"
+	fi
+	
         xspec - "_$initFile"
 
     fi
