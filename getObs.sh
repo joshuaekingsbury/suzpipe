@@ -19,19 +19,23 @@ obsBasePathFTP=https://heasarc.gsfc.nasa.gov/FTP/suzaku/data/obs/${obsTypeID}//$
 #then
 #	echo "$obs directory exists. Skipping download."
 #else
-	wget -q -nH --no-check-certificate --cut-dirs=5 -r -l0 -c -np -nc -erobots=off --retr-symlinks --show-progress -A *.att.gz,*.hk.gz,*.orb.gz,*.evt.gz,*.gti.gz,*.mkf.gz -R 'index*',*_uf*,*xi0*,*xi2*,*xi3*,*hxd* $obsBasePathFTP
-	echo "$obs downloaded."
+#	wget -q -nH --no-check-certificate --cut-dirs=5 -r -l0 -c -np -nc -erobots=off --retr-symlinks --show-progress -A *.att.gz,*.hk.gz,*.orb.gz,*.evt.gz,*.gti.gz,*.mkf.gz -R 'index*',*_uf*,*xi0*,*xi2*,*xi3*,*hxd* $obsBasePathFTP
+#	echo "$obs downloaded."
 #fi
 
-if [ wget -q --spider $obsqlimgURL ]; then
+if [[ ! $(wget -q --spider $obsqlimgURL) ]]; then
+	echo Yah
 	wget -c -P ${obsPath} $obsqlimgURL
+	wait $!
 fi
 
-if [ wget -q --spider $obsqlxisimgURL ]; then
+if [[ ! $(wget -q --spider $obsqlxisimgURL) ]]; then
 	wget -c -P ${obsPath} $obsqlxisimgURL
+	wait $!
 fi
 
-if [ wget -q --spider $obsBasePathFTP ]; then
+if [[ ! $(wget -q --spider $obsBasePathFTP) ]]; then
 	wget -q -nH --no-check-certificate --cut-dirs=5 -r -l0 -c -np -nc -erobots=off --retr-symlinks --show-progress -A *.att.gz,*.hk.gz,*.orb.gz,*.evt.gz,*.gti.gz,*.mkf.gz -R 'index*',*_uf*,*xi0*,*xi2*,*xi3*,*hxd* $obsBasePathFTP
+	wait $!
 	echo "$obs downloaded."
 fi
