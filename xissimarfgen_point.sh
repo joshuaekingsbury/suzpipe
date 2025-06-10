@@ -21,18 +21,18 @@ else
 
 	xissimarfgen \
 	instrume=XIS1 \
-	source_mode=UNIFORM \
-	source_rmin=0 \
-	source_rmax=20 \
+	pointing=AUTO \
+	source_mode=J2000 \
+	source_ra=148.833 \
+	source_dec=69.85 \
 	num_region=1 \
     region_mode=SKYREG \
 	regfile1=${regFile} \
 	arffile1=${outFile} \
-	limit_mode=MIXED \
-	num_photon=2000000 \
-	accuracy=0.005 \
+	limit_mode=NUM_PHOTON \
+	num_photon=400000 \
 	phafile=${histFile_dye} \
-	detmask=${expmapFile_dye} \
+	detmask=none \
 	gtifile=${histFile_dye} \
 	attitude=${attFile} \
 	rmffile=${rmfFile_dye} \

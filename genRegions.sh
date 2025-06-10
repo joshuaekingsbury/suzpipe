@@ -31,20 +31,20 @@ if [[ ! -z "$regFile" ]] && [ -f "$regFile" ]; then
 
 else
 
-regFile=${datedRegFile}
+	regFile=${datedRegFile}
 
-ds9 $obsRegPath/${preRegImg_dye} \
-    -scale log -cmap rainbow -smooth yes -contour yes -contour method smooth -contour scale histequ -contour mode zscale -contour smooth 5 -contour nlevels 1 -contour color black -contour generate -contour save $obsRegPath/${obsDS9/.EXT./ctr} -contour convert -regions select all -regions exclude -regions group excluded new -regions select none -regions include -regions command "image;polygon(0,0,$xdim,0,$xdim,$ydim,0,$ydim)" -regions group excluded moveback -regions save $obsRegPath/${regFile} -exit &
+	ds9 $obsRegPath/${preRegImg_dye} \
+		-scale log -cmap rainbow -smooth yes -contour yes -contour method smooth -contour scale histequ -contour mode zscale -contour smooth 5 -contour nlevels 1 -contour color black -contour generate -contour save $obsRegPath/${obsDS9/.EXT./ctr} -contour convert -regions select all -regions exclude -regions group excluded new -regions select none -regions include -regions command "image;polygon(0,0,$xdim,0,$xdim,$ydim,0,$ydim)" -regions group excluded moveback -regions save $obsRegPath/${regFile} -exit &
 
-PID=$!
+	PID=$!
 
-echo "DS9 Process ID for initial region auto pass: $PID"
+	echo "DS9 Process ID for initial region auto pass: $PID"
 
-wait $PID
+	wait $PID
 
-echo "DS9 @ Process ID: $PID closed. Initial region auto pass completed."
+	echo "DS9 @ Process ID: $PID closed. Initial region auto pass completed."
 
-echo "Initial regions files generated."
+	echo "Initial regions files generated."
 
 fi
 

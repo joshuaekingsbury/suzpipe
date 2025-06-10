@@ -9,6 +9,9 @@ function xi(){
     initFile=_xspecinit.xcm
     nhFile=_getnh.sh
 
+    if [ ! -d $fittingPath ]; then
+        fittingPath=$PWD/$1
+    fi
 
 
     pushd $fittingPath
@@ -37,16 +40,16 @@ function xi(){
         cp $initFile "_${initFile}"
 
 
-	# bashinit includes heainit, caldbinit, condainit (for wget); batch processing requires being run in a bash shell
-	
-	echo "$OSTYPE"
-	if [[ "$OSTYPE" == "darwin"* ]]; then
+        # bashinit includes heainit, caldbinit, condainit (for wget); batch processing requires being run in a bash shell
+        
+        echo "$OSTYPE"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
 
-            sed -i '' 's/%1%/'"${inFile}"'/' "_${initFile}"
-        else
-            
-            sed -i 's/%1%/'"${inFile}"'/' "_${initFile}"
-	fi
+                sed -i '' 's/%1%/'"${inFile}"'/' "_${initFile}"
+            else
+                
+                sed -i 's/%1%/'"${inFile}"'/' "_${initFile}"
+        fi
 	
         xspec - "_$initFile"
 
