@@ -1,0 +1,16 @@
+%1%_%2%_%4%
+set datadir
+%3%
+set instr xis1
+read events
+%5%
+select mkf
+SAA==0 && T_SAA>436 && COR>8 && ELV>10 && DYE_ELV>%2%
+filter pha_cutoff %6% %7%
+set binsize 32
+extract curve
+set device /GIF
+save curve
+%8%
+exit
+n

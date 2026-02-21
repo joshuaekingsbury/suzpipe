@@ -56,7 +56,7 @@ case $autoRegBool in
 
 	echo "Loading image and regions for review/edit."
 
-	ds9 $obsRegPath/${preRegImg_dye} -scale log -cmap rainbow -smooth yes -zoom to fit -regions load $obsRegPath/${regFile} &
+	ds9 $obsRegPath/${preRegImg_dye} -scale sinh -cmap aips0 -smooth yes -zoom to fit -regions load $obsRegPath/${regFile} &
 
 	PID=$!
 
@@ -77,13 +77,15 @@ esac
 #####
 echo "Loading region file and saving images for reference."
 
-ds9 $obsRegPath/${preRegImg_dye} -scale log -cmap rainbow -smooth yes -regions load $obsRegPath/${regFile} -zoom to fit -saveimage png $obsRegPath/${obsDS9/.EXT./png} -exit &
+#ds9 $obsRegPath/${preRegImg_dye} -scale log -cmap rainbow -smooth yes -regions load $obsRegPath/${regFile} -zoom to fit -saveimage png $obsRegPath/${obsDS9/.EXT./png} -exit &
+ds9 $obsRegPath/${preRegImg_dye} -scale sinh -cmap aips0 -smooth yes -regions load $obsRegPath/${regFile} -zoom to fit -saveimage png $obsRegPath/${obsDS9/.EXT./png} -exit &
 
 PID=$!
 echo "DS9 Process ID for reference image out: $PID"
 wait $PID
 
-ds9 $obsRegPath/${preRegImg_dye} -scale histequ -cmap rainbow -smooth yes -regions load $obsRegPath/${regFile} -zoom to fit -saveimage jpeg $obsRegPath/${obsDS9/.EXT./jpeg} -exit &
+#ds9 $obsRegPath/${preRegImg_dye} -scale histequ -cmap rainbow -smooth yes -regions load $obsRegPath/${regFile} -zoom to fit -saveimage jpeg $obsRegPath/${obsDS9/.EXT./jpeg} -exit &
+ds9 $obsRegPath/${preRegImg_dye} -scale log -cmap rainbow -smooth yes -regions load $obsRegPath/${regFile} -zoom to fit -saveimage jpeg $obsRegPath/${obsDS9/.EXT./jpeg} -exit &
 
 PID=$!
 echo "DS9 Process ID for reference image out: $PID"

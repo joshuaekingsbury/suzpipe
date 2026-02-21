@@ -18,7 +18,7 @@
 #obsPath=$SUZ/SURP21/obs
 #obsPath=$SUZ/eb_external/partial18
 obs=$1
-elo=${2:-400}	  # Preview image lower bound; eV
+elo=${2:-300}	  # Preview image lower bound; eV
 ehi=${3:-2000}  # Preview image upper bound; eV
 
 
@@ -140,7 +140,7 @@ echo
 
 
 ####
-#   
+#
 ####
 #chmod 777 getCI.sh
 #sci=$( . getCI.sh ${obs} )
@@ -151,7 +151,7 @@ echo "sci state: $sci"
 echo
 
 ####
-#   
+#
 ####
 
 echo "Identifying appropriate NXB and NPM file names."
@@ -202,7 +202,7 @@ wait $!
 
 ####
 #   Combine the 5x5 and 3x3 event files
-#   Use the bad colum file (npm; noisy pixel file) to 
+#   Use the bad colum file (npm; noisy pixel file) to
 #    remove noisy (suspect?) pixels while merging
 #   Pass in name for final event file product; GTI_file
 ####
@@ -281,14 +281,14 @@ if [[ ! -z "$oneHistFile" ]] && [ -f "$oneHistFile" ];
 then
 	previouslyProcessedDate=${oneHistFile%%_hist.xsl}
 	previouslyProcessedDate=${previouslyProcessedDate##*_}
-	
+
 	echo
 	echo "Previously Processed Date: $previouslyProcessedDate"
-	
+
 	echo
 	echo "Previous hist file(s) found: "
 	echo ${histFiles[@]}
-	
+
 	#doesn't allow selection of second date or other complex stuff, need this now to quick repair files, can expand later
 	read -e -p $'-Leave blank or y for first date \n-any other input to reduce from scratch \n\nEnter selection: \n\n' promptIn
 
@@ -298,11 +298,11 @@ then
 	#then
 	#	processedOn=$promptIn
 	fi
-	
+
 	# Leave $processedOn assigned to today's date
 
 else
-	echo 
+	echo
 	echo "No previous hist files found."
 fi
 
@@ -312,16 +312,12 @@ echo "Processed on: $processedOn"
 
 
 ####
-#   
+#
 ####
 
 #sessionID=${obs}_.DYE._${processedOn}
 
 preRegImg=${elo}-${ehi}_image_${obs}_dye.NUM..fits
-
-
-
-
 
 #chmod 777 obsExtractImg.sh
 for dye in ${dyes[*]}
@@ -379,13 +375,45 @@ wait $!
 for dye in ${dyes[*]}
 do
 	cp ${obsRegPath}/${obsDS9/.EXT./png} ${dyeDir}/${dye}_dye/${obsDS9/.EXT./png}
+	cp ${obsRegPath}/${obsDS9/.EXT./jpeg} ${dyeDir}/${dye}_dye/${obsDS9/.EXT./jpeg}
 	wait $!
 done
 
 # copy dye image and region file to obs directory for easy reference/access
-
 cp ${obsRegPath}/${obsDS9/.EXT./png} ${obsPath}/${obsDS9/.EXT./png}
+cp ${obsRegPath}/${obsDS9/.EXT./jpeg} ${obsPath}/${obsDS9/.EXT./jpeg}
 cp ${obsRegPath}/${obsDS9/.EXT./reg} ${obsPath}/${obsDS9/.EXT./reg}
+cp ${obsRegPath}/${preRegImg/.NUM./$dyeMin} ${obsPath}
+
+
+####
+#   Extract Light Curves
+####
+
+preRegLC=${elo}-${ehi}_lc_${obs}_dye.NUM..gif
+preRegLCf=fullband_lc_${obs}_dye.NUM..gif
+postRegLC=${elo}-${ehi}_lc_masked_${obs}_dye.NUM..gif
+postRegLCf=fullband_lc_masked_${obs}_dye.NUM..gif
+
+###. obsExtractLC.sh ${obsPath}/${GTI_file} ${preRegLC/.NUM./$dye} ${preRegLCf/.NUM./$dye} ${postRegLC/.NUM./$dye} ${postRegLCf/.NUM./$dye} ${obsPath}/${obsDS9/.EXT./reg} ${processedOn}
+
+###return 1 2> /dev/null || exit 1
+
+####
+#   Masked Region Image
+####
+
+postRegImg=${elo}-${ehi}_image_masked_${obs}_dye.NUM..fits
+
+for dye in ${dyes[*]}
+do
+	# ./obsExtractImg.sh ${obs} ${dye} ${dyeDir} ${scriptPath} ${evtPath} ${GTI_file} ${preRegImg/.NUM./$dye} ${processedOn}
+	. obsExtractImgMasked.sh ${GTI_file} ${postRegImg/.NUM./$dye} ${obsPath}/${obsDS9/.EXT./reg} ${processedOn}
+	wait $!
+done
+
+cp ${obsRegPath}/${postRegImg/.NUM./$dyeMin} ${obsPath}
+
 
 ###################
 # return 1 2> /dev/null || exit 1
@@ -403,7 +431,7 @@ nxbFile=${productTemplate/PRODUCT/nxb}
 grpphaFile=${productTemplate/PRODUCT/grppha}
 
 ####
-#   Obtain the hist file; 
+#   Obtain the hist file;
 ####
 
 #chmod 777 obsExtractAll.sh
@@ -419,7 +447,7 @@ done
 #return 1 2> /dev/null || exit 1
 
 ####
-#   Obtain the rmf file; 
+#   Obtain the rmf file;
 ####
 
 #chmod 777 xisrmfgen.sh
@@ -430,7 +458,7 @@ do
 done
 
 ####
-#   Obtain the expmap file; 
+#   Obtain the expmap file;
 ####
 
 #chmod 777 xisexpmapgen.sh

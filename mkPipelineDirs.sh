@@ -12,20 +12,20 @@ mkdir xspec
 echo
 echo "Preparing directories according to obs date: ${obsDate}"
 
-if [[ "$obsDate" < "2011-01-01" ]]
-then
-	mkdir reduced/20_dye
-	mkdir xspec/20_dye
+# if [[ "$obsDate" < "2011-01-01" ]]
+# then
+# 	mkdir reduced/20_dye
+# 	mkdir xspec/20_dye
 
-else
-	mkdir reduced/20_dye
-	mkdir reduced/40_dye
-	mkdir reduced/60_dye
+# else
+mkdir reduced/20_dye
+mkdir reduced/40_dye
+mkdir reduced/60_dye
 
-	mkdir xspec/20_dye
-	mkdir xspec/40_dye
-	mkdir xspec/60_dye
-fi
+mkdir xspec/20_dye
+mkdir xspec/40_dye
+mkdir xspec/60_dye
+# fi
 
 echo reduced/*_dye
 
